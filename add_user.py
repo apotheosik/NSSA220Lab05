@@ -5,35 +5,31 @@ import csv
     25 April 2022
     User adding and removing script"""
 
+NO_OUT = " >/dev/null 2>&1"
+
 """If the C shell does not exist, install it"""
 def cCheck():
-    if os.system("which C") == 0: #TODO check os.system return, also might be "which tcsh" || which csh
-        os.system("yum -y install tcsh >/dev/null 2>&1") #TODO check redirect order https://stackoverflow.com/questions/18012930/how-can-i-redirect-all-output-to-dev-null
+    if os.system("which csh" + NO_OUT) == 0:
+        os.system("yum -y install tcsh"+ NO_OUT)
 
 """strip and save header via csvreader
     @return list of user rows"""
 def dataIntake():
-    filename = "linux_users.csv"
+    header = []
+    users = []
 
-# initializing the titles and rows list
-    fields = []
-    rows = []
-
-# reading csv file
-    with open(filename, 'r') as csvfile:
-        csvreader = csv.reader(csvfile)
+    with open("linux_users.csv", 'r') as userCSV:
+        csvreader = csv.reader(userCSV)
 
     # take header field to ignore
-        fields = next(csvreader)
+        header = next(userCSV)
 
     #one list element per person
-        for row in csvreader:
-            rows.append()
-    print(fields)
-    print(rows)
+        for row in userCSV:
+            users.append(row)
 
     #export user with attributes without trailing space
-    return rows.pop()
+    return users.pop()
 
 """perform data validation and create users
     @param list of users with attributes"""
@@ -63,7 +59,7 @@ def createUsers(userList):
 
             #must create dept directories before making home folders, but after removing special chars
             if argumentIndex == 5:
-                os.system("mkdir "+ userList[userIndex][5] + ">/dev/null 2>&1")#TODO make into constant???
+                os.system("mkdir "+ userList[userIndex][5] + NO_OUT)
 
         #define arguments
         eID = userList[userIndex][0]
@@ -76,19 +72,19 @@ def createUsers(userList):
         password = "password"
         homeDir = "/home/" + dept + "/" + username
         #create group if it does not exist
-        groupExistCheck = os.system("getent group ", group)
+        groupExistCheck = os.system("getent group ", group + NO_OUT)
         if groupExistCheck == 0:
-            os.system("groupadd " + group)
+            os.system("groupadd " + group + NO_OUT)
 
         #change from default /usr/bin/bash to /usr/bin/csh for office members
         if group == "office":
-            shell = "/usr/bin/csh" #TODO might be TCSH
+            shell = "/usr/bin/csh"
 
         #if user exists, add counter
         username = fName[0] + lName
         usernameCounter = 0
         while True:
-            userExistCheck = os.system("id -u \"" + username + "\"")
+            userExistCheck = os.system("id -u \"" + username + "\"" + NO_OUT)
             if userExistCheck == 0:
                 #remove previously appended counter, futureproof
                 for character in reversed(username):
@@ -100,10 +96,10 @@ def createUsers(userList):
                 usernameCounter = usernameCounter+1
             else:
                 break
-        os.system("usermod " + username + " -g" + group + " --move-home " + homeDir + " --shell " + shell)
-        os.system("chfn " + " -f " + fName + lName + " -w " + phone + " -o " + office + username)
+        os.system("usermod " + username + " -g" + group + " --move-home " + homeDir + " --shell " + shell + NO_OUT)
+        os.system("chfn " + " -f " + fName + lName + " -w " + phone + " -o " + office + username + NO_OUT)
         #forces password change on login
-        os.system("passwd -e " + username)
+        os.system("passwd -e " + username + NO_OUT)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
