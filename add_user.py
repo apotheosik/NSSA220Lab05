@@ -40,6 +40,8 @@ def dataIntake():
     bypasses list index error"""
 def forceAlphaNumeric(attribute):
     alNumAttribute = ''
+    if attribute.isalnum():
+        return attribute
     for characterIndex in range(len(attribute)):
         if attribute[characterIndex].isalnum():
             alNumAttribute = alNumAttribute + attribute[characterIndex]
