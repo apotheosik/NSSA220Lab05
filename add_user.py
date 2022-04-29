@@ -35,6 +35,15 @@ def dataIntake():
 
     return users
 
+"""Naive solution
+    composes string of alphanumeric elements
+    bypasses list index error"""
+def forceAlphaNumeric(attribute):
+    alNumAttribute = ''
+    for characterIndex in range(len(attribute)):
+        if attribute[characterIndex].isalnum():
+            alNumAttribute = alNumAttribute + attribute[characterIndex]
+    return alNumAttribute
 
 """perform data validation and create users
     @param list of users with attributes"""
@@ -51,15 +60,9 @@ def createUsers(userList):
             #turn to lowercase version
             userList[userIndex][argumentIndex] = userList[userIndex][argumentIndex].lower()
 
-            #if character is not a letter, omit
-            for characterIndex in range(len(userList[userIndex][argumentIndex])): #userlist[userIndex][argumentIndex][letterIndex] = 'a'...
-                if argumentIndex in specialCharsAcceptableList:
-                    break
-                if not ord(userList[userIndex][argumentIndex][characterIndex]) in range(ord("A"), ord("{")): #if character is not a letter
-                    if not ord(userList[userIndex][argumentIndex][characterIndex]) in range(ord("0"), ord(":")): #if character is not a number
-                        print("Before: ", userList[userIndex][argumentIndex])
-                        userList[userIndex][argumentIndex] = userList[userIndex][argumentIndex].replace(userList[userIndex][argumentIndex][characterIndex], '')
-                        print("After: ", userList[userIndex][argumentIndex])
+            #force out special characters when field is not phone or office
+            if not argumentIndex in specialCharsAcceptableList:
+                userList[userIndex][argumentIndex] = forceAlphaNumeric(userList[userIndex][argumentIndex])
 
             #must create dept directories before making home folders, but after removing special chars
             if argumentIndex == 5:
