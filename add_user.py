@@ -32,7 +32,7 @@ def dataIntake():
                 users.append(row)
             else:
                 print("Employee ", row[0], " unable to be added due to insuffient information.")
-
+    users.pop()
     return users
 
 """Naive solution
@@ -84,7 +84,7 @@ def createUsers(userList):
         homeDir = "/home/" + dept + "/" + username
         #create group if it does not exist
         groupExistCheck = os.system("getent group " + group + NO_OUT)
-        if groupExistCheck == 0:
+        if groupExistCheck != 0:
             os.system("groupadd " + group + NO_OUT)
 
         #change from default /usr/bin/bash to /usr/bin/csh for office members
@@ -99,15 +99,16 @@ def createUsers(userList):
                 #remove previously appended counter, futureproof
                 for character in reversed(username):
                     if character.isdigit():
-                        username = username.pop()
+                        username = username[:-1]
                     else:
                         break
-                username = username + usernameCounter
+                username = username + str(usernameCounter)
                 usernameCounter = usernameCounter+1
             else:
+                os.system("useradd " + username)
                 break
-        os.system("usermod " + username + " -g" + group + " --move-home " + homeDir + " --shell " + shell + NO_OUT)
-        os.system("chfn " + " -f " + fName + lName + " -w " + phone + " -o " + office + username + NO_OUT)
+        os.system("usermod -g" + group + " --move-home -d " + homeDir + " --shell " + shell + " " + username + NO_OUT)
+        os.system("chfn " + "-f \'" + fName + " " + lName + "\' -p \'" + phone + "\' -o \'" + office + "\' " + username + NO_OUT)
         #forces password change on login
         os.system("passwd -e " + username + NO_OUT)
 
