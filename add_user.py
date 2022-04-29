@@ -15,21 +15,26 @@ def cCheck():
 """strip and save header via csvreader
     @return list of user rows"""
 def dataIntake():
-    header = []
     users = []
 
     with open("linux_users.csv", 'r') as userCSV:
-        csvreader = csv.reader(userCSV)
-
-    # take header field to ignore
-        header = next(userCSV)
+        reader = csv.reader(userCSV, delimiter=",")
+        next(reader) #skip header
 
     #one list element per person
         for row in userCSV:
-            users.append(row)
+            row = row.split(',')
+            row.pop() #remove newline
 
-    #export user with attributes without trailing space
-    return users.pop()
+            try:
+                row.index("")
+            except ValueError: #if the non value is not present, add entry to list
+                users.append(row)
+            else:
+                print("Employee ", row[0], " unable to be added due to insuffient information.")
+
+    return users
+
 
 """perform data validation and create users
     @param list of users with attributes"""
@@ -45,21 +50,20 @@ def createUsers(userList):
 
             #turn to lowercase version
             userList[userIndex][argumentIndex] = userList[userIndex][argumentIndex].lower()
-            #notify user and remove entry for missing information
-            if userList[userIndex][argumentIndex] == '':
-                print("User ", userList[userIndex][2], " ", userList[userIndex][3], "account was not added due to missing information. ")
-                userList.pop(userIndex)
 
             #if character is not a letter, omit
             for characterIndex in range(len(userList[userIndex][argumentIndex])): #userlist[userIndex][argumentIndex][letterIndex] = 'a'...
-                if argumentIndex in specialCharsAcceptableList: #TODO fix where this is placed?
+                if argumentIndex in specialCharsAcceptableList:
                     break
-                if not ord(userList[userIndex][argumentIndex][characterIndex]) in range(ord("A"), ord("z")): #if character is not a letter, remove
-                    userList[userIndex][argumentIndex] = userList[userIndex][argumentIndex].pop[characterIndex]
+                if not ord(userList[userIndex][argumentIndex][characterIndex]) in range(ord("A"), ord("{")): #if character is not a letter
+                    if not ord(userList[userIndex][argumentIndex][characterIndex]) in range(ord("0"), ord(":")): #if character is not a number
+                        print("Before: ", userList[userIndex][argumentIndex])
+                        userList[userIndex][argumentIndex] = userList[userIndex][argumentIndex].replace(userList[userIndex][argumentIndex][characterIndex], '')
+                        print("After: ", userList[userIndex][argumentIndex])
 
             #must create dept directories before making home folders, but after removing special chars
             if argumentIndex == 5:
-                os.system("mkdir "+ userList[userIndex][5] + NO_OUT)
+                os.system("mkdir /home/"+ userList[userIndex][5] + NO_OUT)
 
         #define arguments
         eID = userList[userIndex][0]
@@ -69,10 +73,12 @@ def createUsers(userList):
         phone = userList[userIndex][4]
         dept = userList[userIndex][5]
         group = userList[userIndex][6]
+        username = fName[0] + lName
+        shell = "/usr/bin/bash"
         password = "password"
         homeDir = "/home/" + dept + "/" + username
         #create group if it does not exist
-        groupExistCheck = os.system("getent group ", group + NO_OUT)
+        groupExistCheck = os.system("getent group " + group + NO_OUT)
         if groupExistCheck == 0:
             os.system("groupadd " + group + NO_OUT)
 
@@ -81,7 +87,6 @@ def createUsers(userList):
             shell = "/usr/bin/csh"
 
         #if user exists, add counter
-        username = fName[0] + lName
         usernameCounter = 0
         while True:
             userExistCheck = os.system("id -u \"" + username + "\"" + NO_OUT)
@@ -101,7 +106,6 @@ def createUsers(userList):
         #forces password change on login
         os.system("passwd -e " + username + NO_OUT)
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     os.system("clear")
     cCheck()
